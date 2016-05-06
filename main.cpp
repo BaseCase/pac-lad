@@ -1,16 +1,25 @@
-#include <stdio.h>
 #include "vendor/SDL.h"
+
+
+typedef struct InputStatus {
+  int up;
+  int down;
+  int right;
+  int left;
+} InputStatus;
 
 
 int main (int argc, char* argv[]);
 static void do_game ();
 static void render ();
 static void handle_events ();
+static void toggle_direction_key (SDL_KeyboardEvent event, int pressed);
 
 
 static SDL_Window *win;
 static SDL_Renderer *ren;
 static bool running;
+static InputStatus input = {};
 
 
 int main (int argc, char* argv[])
@@ -39,7 +48,7 @@ int main (int argc, char* argv[])
 
 static void do_game ()
 {
-  running = true;
+  running = 1;
 
   while (running) {
     render();
@@ -51,7 +60,16 @@ static void do_game ()
 
 static void render ()
 {
-  SDL_SetRenderDrawColor(ren, 50, 50, 50, 255);
+  int r = 50, g = 50, b = 50, a = 255;
+
+  if (input.up)
+    r = 200;
+  if (input.down)
+    b = 200;
+  if (input.right)
+    g = 200;
+
+  SDL_SetRenderDrawColor(ren, r, g, b, a);
   SDL_RenderClear(ren);
   SDL_RenderPresent(ren);
 }
@@ -64,12 +82,42 @@ static void handle_events ()
   while (SDL_PollEvent(&event)) {
     switch (event.type) {
       case SDL_QUIT:
-        running = false;
+        running = 0;
+        break;
+
+      case SDL_KEYDOWN:
+        toggle_direction_key(event.key, 1);
+        break;
+
+      case SDL_KEYUP:
+        toggle_direction_key(event.key, 0);
         break;
 
       default:
         break;
     }
+  }
+}
+
+
+static void toggle_direction_key (SDL_KeyboardEvent event, int pressed)
+{
+  switch (event.keysym.sym) {
+    case SDLK_UP:
+      input.up = pressed;
+      break;
+
+    case SDLK_DOWN:
+      input.down = pressed;
+      break;
+
+    case SDLK_RIGHT:
+      input.right = pressed;
+      break;
+
+    case SDLK_LEFT:
+      input.left = pressed;
+      break;
   }
 }
 
