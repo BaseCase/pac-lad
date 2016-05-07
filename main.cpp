@@ -2,10 +2,9 @@
 
 
 typedef struct InputStatus {
-  int up;
-  int down;
-  int right;
-  int left;
+  int red;
+  int green;
+  int blue;
 } InputStatus;
 
 
@@ -13,7 +12,7 @@ int main (int argc, char* argv[]);
 static void do_game ();
 static void render ();
 static void handle_events ();
-static void toggle_direction_key (SDL_KeyboardEvent event, int pressed);
+static void toggle_direction_key (SDL_KeyboardEvent event, int is_pressed);
 
 
 static SDL_Window *win;
@@ -62,12 +61,12 @@ static void render ()
 {
   int r = 50, g = 50, b = 50, a = 255;
 
-  if (input.up)
+  if (input.red)
     r = 200;
-  if (input.down)
-    b = 200;
-  if (input.right)
+  if (input.green)
     g = 200;
+  if (input.blue)
+    b = 200;
 
   SDL_SetRenderDrawColor(ren, r, g, b, a);
   SDL_RenderClear(ren);
@@ -100,23 +99,19 @@ static void handle_events ()
 }
 
 
-static void toggle_direction_key (SDL_KeyboardEvent event, int pressed)
+static void toggle_direction_key (SDL_KeyboardEvent event, int is_pressed)
 {
   switch (event.keysym.sym) {
-    case SDLK_UP:
-      input.up = pressed;
+    case SDLK_r:
+      input.red = is_pressed;
       break;
 
-    case SDLK_DOWN:
-      input.down = pressed;
+    case SDLK_g:
+      input.green = is_pressed;
       break;
 
-    case SDLK_RIGHT:
-      input.right = pressed;
-      break;
-
-    case SDLK_LEFT:
-      input.left = pressed;
+    case SDLK_b:
+      input.blue = is_pressed;
       break;
   }
 }
