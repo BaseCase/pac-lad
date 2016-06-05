@@ -51,7 +51,7 @@ int main (int argc, char* argv[])
       480,
       SDL_INIT_VIDEO);
 
-  ren = SDL_CreateRenderer(win, -1, 0);
+  ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
   pactex = load_image_as_texture("./pac-sheet.bmp");
 
   pacman = (Sprite*)malloc(sizeof(Sprite));
