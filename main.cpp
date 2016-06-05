@@ -1,22 +1,27 @@
+#include <stdbool.h>
 #include "vendor/SDL.h"
 
 
 typedef struct InputStatus {
-  int red;
-  int green;
-  int blue;
+  bool up;
+  bool down;
+  bool left;
+  bool right;
 } InputStatus;
 
 
 int main (int argc, char* argv[]);
 static void do_game ();
-static void render ();
 static void handle_events ();
-static void toggle_direction_key (SDL_KeyboardEvent event, int is_pressed);
+static void update_universe ();
+static void render ();
+static SDL_Texture* load_pacman_image ();
+static void toggle_key (SDL_KeyboardEvent event, bool is_pressed);
 
 
 static SDL_Window *win;
 static SDL_Renderer *ren;
+static SDL_Texture *pactex;
 static bool running;
 static InputStatus input = {};
 
@@ -31,9 +36,10 @@ int main (int argc, char* argv[])
       SDL_WINDOWPOS_UNDEFINED,
       640,
       480,
-      SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+      SDL_INIT_VIDEO);
 
   ren = SDL_CreateRenderer(win, -1, 0);
+  pactex = load_pacman_image();
 
   do_game();
 
@@ -50,27 +56,11 @@ static void do_game ()
   running = 1;
 
   while (running) {
-    render();
     handle_events();
+    update_universe();
+    render();
     SDL_Delay(10);
   }
-}
-
-
-static void render ()
-{
-  int r = 50, g = 50, b = 50, a = 255;
-
-  if (input.red)
-    r = 200;
-  if (input.green)
-    g = 200;
-  if (input.blue)
-    b = 200;
-
-  SDL_SetRenderDrawColor(ren, r, g, b, a);
-  SDL_RenderClear(ren);
-  SDL_RenderPresent(ren);
 }
 
 
@@ -85,11 +75,11 @@ static void handle_events ()
         break;
 
       case SDL_KEYDOWN:
-        toggle_direction_key(event.key, 1);
+        toggle_key(event.key, true);
         break;
 
       case SDL_KEYUP:
-        toggle_direction_key(event.key, 0);
+        toggle_key(event.key, false);
         break;
 
       default:
@@ -99,20 +89,36 @@ static void handle_events ()
 }
 
 
-static void toggle_direction_key (SDL_KeyboardEvent event, int is_pressed)
+static void update_universe ()
+{
+}
+
+
+static void render ()
+{
+  SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
+  SDL_RenderClear(ren);
+  SDL_RenderCopy(ren, pactex, NULL, NULL);
+  SDL_RenderPresent(ren);
+}
+
+
+static SDL_Texture* load_pacman_image ()
+{
+  SDL_Surface* img;
+  SDL_Texture* tex;
+
+  img = SDL_LoadBMP("./pac_man.bmp");
+  tex = SDL_CreateTextureFromSurface(ren, img);
+  SDL_FreeSurface(img);
+
+  return tex;
+}
+
+
+static void toggle_key (SDL_KeyboardEvent event, bool is_pressed)
 {
   switch (event.keysym.sym) {
-    case SDLK_r:
-      input.red = is_pressed;
-      break;
-
-    case SDLK_g:
-      input.green = is_pressed;
-      break;
-
-    case SDLK_b:
-      input.blue = is_pressed;
-      break;
   }
 }
 
