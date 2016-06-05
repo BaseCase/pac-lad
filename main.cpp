@@ -44,7 +44,7 @@ int main (int argc, char* argv[])
   SDL_Init(SDL_INIT_VIDEO);
 
   win = SDL_CreateWindow(
-      "Wow it's so good",
+      "Pac-Lad",
       SDL_WINDOWPOS_UNDEFINED,
       SDL_WINDOWPOS_UNDEFINED,
       640,
