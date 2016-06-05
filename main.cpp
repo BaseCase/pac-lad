@@ -15,6 +15,7 @@ typedef struct Sprite {
   int y;
   int width;
   int height;
+  int current_frame;
 } Sprite;
 
 
@@ -48,13 +49,14 @@ int main (int argc, char* argv[])
       SDL_INIT_VIDEO);
 
   ren = SDL_CreateRenderer(win, -1, 0);
-  pactex = load_image_as_texture("./pac_man.bmp");
+  pactex = load_image_as_texture("./pac-sheet.bmp");
 
   pacman = (Sprite*)malloc(sizeof(Sprite));
   pacman->x = 40;
   pacman->y = 40;
-  pacman->width = 30;
-  pacman->height = 30;
+  pacman->width = 50;
+  pacman->height = 50;
+  pacman->current_frame = 0;
 
   do_game();
 
@@ -74,7 +76,7 @@ static void do_game ()
     handle_events();
     update_universe();
     render();
-    SDL_Delay(10);
+    SDL_Delay(33);
   }
 }
 
@@ -110,6 +112,10 @@ static void update_universe ()
   if (input.down) pacman->y++;
   if (input.left) pacman->x--;
   if (input.right) pacman->x++;
+
+  if (input.up || input.down || input.left || input.right) {
+    pacman->current_frame = (pacman->current_frame + 1) % 4;
+  }
 }
 
 
@@ -117,12 +123,20 @@ static void render ()
 {
   SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
   SDL_RenderClear(ren);
-  SDL_Rect r = {0};
-  r.x = pacman->x;
-  r.y = pacman->y;
-  r.w = pacman->width;
-  r.h = pacman->height;
-  SDL_RenderCopy(ren, pactex, NULL, &r);
+
+  SDL_Rect frame = {0};
+  frame.x = 50 * pacman->current_frame;
+  frame.y = 0;
+  frame.w = 50;
+  frame.h = 50;
+
+  SDL_Rect target = {0};
+  target.x = pacman->x;
+  target.y = pacman->y;
+  target.w = pacman->width;
+  target.h = pacman->height;
+
+  SDL_RenderCopy(ren, pactex, &frame, &target);
   SDL_RenderPresent(ren);
 }
 
@@ -133,6 +147,7 @@ static SDL_Texture* load_image_as_texture (const char* filename)
   SDL_Texture* tex;
 
   img = SDL_LoadBMP(filename);
+  SDL_SetColorKey(img, 1, SDL_MapRGB(img->format, 0xFF, 0x00, 0x80));
   tex = SDL_CreateTextureFromSurface(ren, img);
   SDL_FreeSurface(img);
 
