@@ -10,6 +10,14 @@ typedef struct InputStatus {
 } InputStatus;
 
 
+typedef struct Sprite {
+  int x;
+  int y;
+  int width;
+  int height;
+} Sprite;
+
+
 int main (int argc, char* argv[]);
 static void do_game ();
 static void handle_events ();
@@ -24,6 +32,7 @@ static SDL_Renderer *ren;
 static SDL_Texture *pactex;
 static bool running;
 static InputStatus input = {};
+static Sprite* pacman;
 
 
 int main (int argc, char* argv[])
@@ -40,6 +49,12 @@ int main (int argc, char* argv[])
 
   ren = SDL_CreateRenderer(win, -1, 0);
   pactex = load_pacman_image();
+
+  pacman = (Sprite*)malloc(sizeof(Sprite));
+  pacman->x = 40;
+  pacman->y = 40;
+  pacman->width = 30;
+  pacman->height = 30;
 
   do_game();
 
@@ -91,6 +106,10 @@ static void handle_events ()
 
 static void update_universe ()
 {
+  if (input.up) pacman->y--;
+  if (input.down) pacman->y++;
+  if (input.left) pacman->x--;
+  if (input.right) pacman->x++;
 }
 
 
@@ -98,7 +117,12 @@ static void render ()
 {
   SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
   SDL_RenderClear(ren);
-  SDL_RenderCopy(ren, pactex, NULL, NULL);
+  SDL_Rect r = {0};
+  r.x = pacman->x;
+  r.y = pacman->y;
+  r.w = pacman->width;
+  r.h = pacman->height;
+  SDL_RenderCopy(ren, pactex, NULL, &r);
   SDL_RenderPresent(ren);
 }
 
@@ -119,6 +143,21 @@ static SDL_Texture* load_pacman_image ()
 static void toggle_key (SDL_KeyboardEvent event, bool is_pressed)
 {
   switch (event.keysym.sym) {
+    case SDLK_UP:
+      input.up = is_pressed;
+      break;
+
+    case SDLK_DOWN:
+      input.down = is_pressed;
+      break;
+
+    case SDLK_LEFT:
+      input.left = is_pressed;
+      break;
+
+    case SDLK_RIGHT:
+      input.right = is_pressed;
+      break;
   }
 }
 
