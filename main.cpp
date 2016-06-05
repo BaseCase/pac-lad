@@ -23,7 +23,7 @@ static void do_game ();
 static void handle_events ();
 static void update_universe ();
 static void render ();
-static SDL_Texture* load_pacman_image ();
+static SDL_Texture* load_image_as_texture (const char* filename);
 static void toggle_key (SDL_KeyboardEvent event, bool is_pressed);
 
 
@@ -48,7 +48,7 @@ int main (int argc, char* argv[])
       SDL_INIT_VIDEO);
 
   ren = SDL_CreateRenderer(win, -1, 0);
-  pactex = load_pacman_image();
+  pactex = load_image_as_texture("./pac_man.bmp");
 
   pacman = (Sprite*)malloc(sizeof(Sprite));
   pacman->x = 40;
@@ -127,12 +127,12 @@ static void render ()
 }
 
 
-static SDL_Texture* load_pacman_image ()
+static SDL_Texture* load_image_as_texture (const char* filename)
 {
   SDL_Surface* img;
   SDL_Texture* tex;
 
-  img = SDL_LoadBMP("./pac_man.bmp");
+  img = SDL_LoadBMP(filename);
   tex = SDL_CreateTextureFromSurface(ren, img);
   SDL_FreeSurface(img);
 
