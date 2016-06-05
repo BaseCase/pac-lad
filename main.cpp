@@ -16,6 +16,9 @@ typedef struct Sprite {
   int width;
   int height;
   int current_frame;
+  int last_frame_update;
+  int update_speed_ms;
+  int rotation;
 } Sprite;
 
 
@@ -57,6 +60,9 @@ int main (int argc, char* argv[])
   pacman->width = 50;
   pacman->height = 50;
   pacman->current_frame = 0;
+  pacman->last_frame_update = SDL_GetTicks();
+  pacman->update_speed_ms = 100;
+  pacman->rotation = 0;
 
   do_game();
 
@@ -108,13 +114,26 @@ static void handle_events ()
 
 static void update_universe ()
 {
-  if (input.up) pacman->y--;
-  if (input.down) pacman->y++;
-  if (input.left) pacman->x--;
-  if (input.right) pacman->x++;
+  if (input.up) {
+    pacman->y -= 5;
+    pacman->rotation = 270;
+  } else if (input.down) {
+    pacman->y += 5;
+    pacman->rotation = 90;
+  } else if (input.left) {
+    pacman->x -= 5;
+    pacman->rotation = 180;
+  } else if (input.right) {
+    pacman->x += 5;
+    pacman->rotation = 0;
+  }
 
   if (input.up || input.down || input.left || input.right) {
-    pacman->current_frame = (pacman->current_frame + 1) % 4;
+    int t = SDL_GetTicks();
+    if (t - pacman->last_frame_update >= pacman->update_speed_ms) {
+      pacman->current_frame = (pacman->current_frame + 1) % 4;
+      pacman->last_frame_update = t;
+    }
   }
 }
 
@@ -136,7 +155,7 @@ static void render ()
   target.w = pacman->width;
   target.h = pacman->height;
 
-  SDL_RenderCopy(ren, pactex, &frame, &target);
+  SDL_RenderCopyEx(ren, pactex, &frame, &target, pacman->rotation, NULL, SDL_FLIP_NONE);
   SDL_RenderPresent(ren);
 }
 
@@ -147,6 +166,7 @@ static SDL_Texture* load_image_as_texture (const char* filename)
   SDL_Texture* tex;
 
   img = SDL_LoadBMP(filename);
+  // fuchsia becomes a transparent color
   SDL_SetColorKey(img, 1, SDL_MapRGB(img->format, 0xFF, 0x00, 0x80));
   tex = SDL_CreateTextureFromSurface(ren, img);
   SDL_FreeSurface(img);
@@ -175,4 +195,3 @@ static void toggle_key (SDL_KeyboardEvent event, bool is_pressed)
       break;
   }
 }
-
