@@ -140,7 +140,7 @@ static void update_universe ()
 
 static void render ()
 {
-  SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
+  SDL_SetRenderDrawColor(ren, 40, 40, 40, 255);
   SDL_RenderClear(ren);
 
   SDL_Rect frame = {0};
