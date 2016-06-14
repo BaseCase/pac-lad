@@ -19,6 +19,7 @@ typedef struct Sprite {
   int last_frame_update;
   int update_speed_ms;
   int rotation;
+  SDL_RendererFlip flip;
 } Sprite;
 
 
@@ -63,6 +64,7 @@ int main (int argc, char* argv[])
   pacman->last_frame_update = SDL_GetTicks();
   pacman->update_speed_ms = 100;
   pacman->rotation = 0;
+  pacman->flip = SDL_FLIP_NONE;
 
   do_game();
 
@@ -117,15 +119,19 @@ static void update_universe ()
   if (input.up) {
     pacman->y -= 5;
     pacman->rotation = 270;
+    pacman->flip = SDL_FLIP_NONE;
   } else if (input.down) {
     pacman->y += 5;
     pacman->rotation = 90;
+    pacman->flip = SDL_FLIP_NONE;
   } else if (input.left) {
     pacman->x -= 5;
     pacman->rotation = 180;
+    pacman->flip = SDL_FLIP_VERTICAL;
   } else if (input.right) {
     pacman->x += 5;
     pacman->rotation = 0;
+    pacman->flip = SDL_FLIP_NONE;
   }
 
   if (input.up || input.down || input.left || input.right) {
@@ -155,7 +161,7 @@ static void render ()
   target.w = pacman->width;
   target.h = pacman->height;
 
-  SDL_RenderCopyEx(ren, pactex, &frame, &target, pacman->rotation, NULL, SDL_FLIP_NONE);
+  SDL_RenderCopyEx(ren, pactex, &frame, &target, pacman->rotation, NULL, pacman->flip);
   SDL_RenderPresent(ren);
 }
 
