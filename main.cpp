@@ -22,6 +22,18 @@ typedef struct Sprite {
   SDL_RendererFlip flip;
 } Sprite;
 
+enum DIRECTION {
+  UP,
+  DOWN,
+  LEFT,
+  RIGHT
+};
+
+typedef struct Ghost {
+  struct Sprite sprite;
+  DIRECTION current_direction;
+} Ghost;
+
 
 int main (int argc, char* argv[]);
 static void do_game ();
@@ -35,9 +47,11 @@ static void toggle_key (SDL_KeyboardEvent event, bool is_pressed);
 static SDL_Window *win;
 static SDL_Renderer *ren;
 static SDL_Texture *pactex;
+static SDL_Texture *ghosttex;
 static bool running;
 static InputStatus input = {};
 static Sprite* pacman;
+static Ghost* funky;
 
 
 int main (int argc, char* argv[])
@@ -54,6 +68,7 @@ int main (int argc, char* argv[])
 
   ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
   pactex = load_image_as_texture("./pac-sheet.bmp");
+  ghosttex = load_image_as_texture("./ghost.bmp");
 
   pacman = (Sprite*)malloc(sizeof(Sprite));
   pacman->x = 40;
@@ -65,6 +80,18 @@ int main (int argc, char* argv[])
   pacman->update_speed_ms = 100;
   pacman->rotation = 0;
   pacman->flip = SDL_FLIP_NONE;
+
+  funky = (Ghost*)malloc(sizeof(Ghost));
+  funky->sprite.x = 100;
+  funky->sprite.y = 100;
+  funky->sprite.width = 50;
+  funky->sprite.height = 50;
+  funky->sprite.current_frame = 0;
+  funky->sprite.last_frame_update = SDL_GetTicks();
+  funky->sprite.update_speed_ms = 400;
+  funky->sprite.rotation = 0;
+  funky->sprite.flip = SDL_FLIP_NONE;
+  funky->current_direction = DOWN;
 
   do_game();
 
@@ -116,6 +143,8 @@ static void handle_events ()
 
 static void update_universe ()
 {
+  int t = SDL_GetTicks();
+
   if (input.up) {
     pacman->y -= 5;
     pacman->rotation = 270;
@@ -135,11 +164,49 @@ static void update_universe ()
   }
 
   if (input.up || input.down || input.left || input.right) {
-    int t = SDL_GetTicks();
     if (t - pacman->last_frame_update >= pacman->update_speed_ms) {
       pacman->current_frame = (pacman->current_frame + 1) % 4;
       pacman->last_frame_update = t;
     }
+  }
+
+  if (t - funky->sprite.last_frame_update >= funky->sprite.update_speed_ms) {
+    funky->sprite.current_frame = (funky->sprite.current_frame + 1) % 2;
+    funky->sprite.last_frame_update = t;
+  }
+
+  int win_h, win_w;
+  SDL_GetWindowSize(win, &win_w, &win_h);
+  if (funky->sprite.y + funky->sprite.height >= win_h) {
+    funky->sprite.y--;
+    funky->current_direction = RIGHT;
+  } else if (funky->sprite.x + funky->sprite.width >= win_w) {
+    funky->sprite.x--;
+    funky->current_direction = UP;
+  } else if (funky->sprite.y <= 0) {
+    funky->sprite.y++;
+    funky->current_direction = LEFT;
+  } else if (funky->sprite.x <= 0) {
+    funky->sprite.x++;
+    funky->current_direction = DOWN;
+  }
+
+  switch (funky->current_direction) {
+    case UP:
+      funky->sprite.y -= 5;
+      break;
+
+    case DOWN:
+      funky->sprite.y += 5;
+      break;
+
+    case LEFT:
+      funky->sprite.x -= 5;
+      break;
+
+    case RIGHT:
+      funky->sprite.x += 5;
+      break;
   }
 }
 
@@ -149,6 +216,7 @@ static void render ()
   SDL_SetRenderDrawColor(ren, 40, 40, 40, 255);
   SDL_RenderClear(ren);
 
+  // render paclad
   SDL_Rect frame = {0};
   frame.x = 50 * pacman->current_frame;
   frame.y = 0;
@@ -162,6 +230,21 @@ static void render ()
   target.h = pacman->height;
 
   SDL_RenderCopyEx(ren, pactex, &frame, &target, pacman->rotation, NULL, pacman->flip);
+
+  // render funky
+  frame.x = 50 * funky->sprite.current_frame;
+  frame.y = 0;
+  frame.w = 50;
+  frame.h = 50;
+
+  target.x = funky->sprite.x;
+  target.y = funky->sprite.y;
+  target.w = funky->sprite.width;
+  target.h = funky->sprite.height;
+
+  SDL_RenderCopyEx(ren, ghosttex, &frame, &target, funky->sprite.rotation, NULL, funky->sprite.flip);
+
+
   SDL_RenderPresent(ren);
 }
 
