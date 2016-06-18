@@ -50,7 +50,7 @@ static SDL_Texture *pactex;
 static SDL_Texture *ghosttex;
 static bool running;
 static InputStatus input = {};
-static Sprite* pacman;
+static Sprite* paclad;
 static Ghost* funky;
 
 
@@ -70,16 +70,16 @@ int main (int argc, char* argv[])
   pactex = load_image_as_texture("./pac-sheet.bmp");
   ghosttex = load_image_as_texture("./ghost.bmp");
 
-  pacman = (Sprite*)malloc(sizeof(Sprite));
-  pacman->x = 40;
-  pacman->y = 40;
-  pacman->width = 50;
-  pacman->height = 50;
-  pacman->current_frame = 0;
-  pacman->last_frame_update = SDL_GetTicks();
-  pacman->update_speed_ms = 100;
-  pacman->rotation = 0;
-  pacman->flip = SDL_FLIP_NONE;
+  paclad = (Sprite*)malloc(sizeof(Sprite));
+  paclad->x = 40;
+  paclad->y = 40;
+  paclad->width = 50;
+  paclad->height = 50;
+  paclad->current_frame = 0;
+  paclad->last_frame_update = SDL_GetTicks();
+  paclad->update_speed_ms = 100;
+  paclad->rotation = 0;
+  paclad->flip = SDL_FLIP_NONE;
 
   funky = (Ghost*)malloc(sizeof(Ghost));
   funky->sprite.x = 100;
@@ -148,32 +148,32 @@ static void update_universe ()
   t = SDL_GetTicks();
 
   if (input.up) {
-    pacman->y -= 5;
-    pacman->rotation = 270;
-    pacman->flip = SDL_FLIP_NONE;
+    paclad->y -= 5;
+    paclad->rotation = 270;
+    paclad->flip = SDL_FLIP_NONE;
   } else if (input.down) {
-    pacman->y += 5;
-    pacman->rotation = 90;
-    pacman->flip = SDL_FLIP_NONE;
+    paclad->y += 5;
+    paclad->rotation = 90;
+    paclad->flip = SDL_FLIP_NONE;
   } else if (input.left) {
-    pacman->x -= 5;
-    pacman->rotation = 180;
-    pacman->flip = SDL_FLIP_VERTICAL;
+    paclad->x -= 5;
+    paclad->rotation = 180;
+    paclad->flip = SDL_FLIP_VERTICAL;
   } else if (input.right) {
-    pacman->x += 5;
-    pacman->rotation = 0;
-    pacman->flip = SDL_FLIP_NONE;
+    paclad->x += 5;
+    paclad->rotation = 0;
+    paclad->flip = SDL_FLIP_NONE;
   }
 
-  if (pacman->x <= 0) pacman->x = 0;
-  if (pacman->x + pacman->width >= win_w) pacman->x = win_w - pacman->width;
-  if (pacman->y <= 0) pacman->y = 0;
-  if (pacman->y + pacman->height >= win_h) pacman->y = win_h - pacman->height;
+  if (paclad->x <= 0) paclad->x = 0;
+  if (paclad->x + paclad->width >= win_w) paclad->x = win_w - paclad->width;
+  if (paclad->y <= 0) paclad->y = 0;
+  if (paclad->y + paclad->height >= win_h) paclad->y = win_h - paclad->height;
 
   if (input.up || input.down || input.left || input.right) {
-    if (t - pacman->last_frame_update >= pacman->update_speed_ms) {
-      pacman->current_frame = (pacman->current_frame + 1) % 4;
-      pacman->last_frame_update = t;
+    if (t - paclad->last_frame_update >= paclad->update_speed_ms) {
+      paclad->current_frame = (paclad->current_frame + 1) % 4;
+      paclad->last_frame_update = t;
     }
   }
 
@@ -223,18 +223,18 @@ static void render ()
 
   // render paclad
   SDL_Rect frame = {0};
-  frame.x = 50 * pacman->current_frame;
+  frame.x = 50 * paclad->current_frame;
   frame.y = 0;
   frame.w = 50;
   frame.h = 50;
 
   SDL_Rect target = {0};
-  target.x = pacman->x;
-  target.y = pacman->y;
-  target.w = pacman->width;
-  target.h = pacman->height;
+  target.x = paclad->x;
+  target.y = paclad->y;
+  target.w = paclad->width;
+  target.h = paclad->height;
 
-  SDL_RenderCopyEx(ren, pactex, &frame, &target, pacman->rotation, NULL, pacman->flip);
+  SDL_RenderCopyEx(ren, pactex, &frame, &target, paclad->rotation, NULL, paclad->flip);
 
   // render funky
   frame.x = 50 * funky->sprite.current_frame;
