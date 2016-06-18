@@ -143,7 +143,9 @@ static void handle_events ()
 
 static void update_universe ()
 {
-  int t = SDL_GetTicks();
+  int win_h, win_w, t;
+  SDL_GetWindowSize(win, &win_w, &win_h);
+  t = SDL_GetTicks();
 
   if (input.up) {
     pacman->y -= 5;
@@ -163,6 +165,11 @@ static void update_universe ()
     pacman->flip = SDL_FLIP_NONE;
   }
 
+  if (pacman->x <= 0) pacman->x = 0;
+  if (pacman->x + pacman->width >= win_w) pacman->x = win_w - pacman->width;
+  if (pacman->y <= 0) pacman->y = 0;
+  if (pacman->y + pacman->height >= win_h) pacman->y = win_h - pacman->height;
+
   if (input.up || input.down || input.left || input.right) {
     if (t - pacman->last_frame_update >= pacman->update_speed_ms) {
       pacman->current_frame = (pacman->current_frame + 1) % 4;
@@ -175,8 +182,6 @@ static void update_universe ()
     funky->sprite.last_frame_update = t;
   }
 
-  int win_h, win_w;
-  SDL_GetWindowSize(win, &win_w, &win_h);
   if (funky->sprite.y + funky->sprite.height >= win_h) {
     funky->sprite.y--;
     funky->current_direction = RIGHT;
